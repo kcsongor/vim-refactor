@@ -1,5 +1,8 @@
 # vim-refactor
 
+`:ReplaceAllWord`
+![replace_l](replace_git.gif)
+
 ## Useful mappings
 Replace word under cursor in the file
 ```vim

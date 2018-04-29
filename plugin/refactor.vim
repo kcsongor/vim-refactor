@@ -51,7 +51,7 @@ function! refactor#find_all_tab(...)
   let word = 0 < a:0 ? a:1 : inputdialog("Word to search for: ")
   $tabe %
   if (exists('g:tabbar_loaded'))
-    tabbar#rename_current_tab("[Uses of " . word . "]")
+    call tabbar#rename_current_tab("[Uses of " . word . "]")
   endif
   call s:find_all_uses(word)
   vertical topleft lopen
@@ -76,7 +76,7 @@ function! refactor#replace_all_word(...)
   let to = 1 < a:0 ? a:2 : inputdialog("Replace (" . word . ") with: ")
   $tabe %
   if (exists('g:tabbar_loaded'))
-    tabbar#rename_current_tab("[Uses of " . word . "]")
+    call tabbar#rename_current_tab("[Uses of " . word . "]")
   endif
   " Check for clashes
   if (a:0 > 2)

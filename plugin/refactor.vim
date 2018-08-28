@@ -74,29 +74,36 @@ function! refactor#replace_all_word(...)
   silent! call matchdelete(66)
   let word = 0 < a:0 ? a:1 : inputdialog("Word to replace: ")
   let to = 1 < a:0 ? a:2 : inputdialog("Replace (" . word . ") with: ")
+  let ignore_clashes = ""
+  while (ignore_clashes != "Y" && ignore_clashes != "N")
+    let ignore_clashes = 2 < a:0 ? a:3 : inputdialog("Ignore clashes? Y/N: ")
+  endwhile
   $tabe %
   if (exists('g:tabbar_loaded'))
     call tabbar#rename_current_tab("[Uses of " . word . "]")
   endif
-  " Check for clashes
-  if (a:0 > 2)
-    silent! call s:find_all_uses(to, a:3)
-  else
-    silent! call s:find_all_uses(to)
+  if (ignore_clashes == "N")
+    " Check for clashes
+    if (a:0 > 2)
+      silent! call s:find_all_uses(to, a:3)
+    else
+      silent! call s:find_all_uses(to)
+    endif
+    let loclist = getloclist(bufwinnr(bufname('.')))
+    if (len(loclist) > 0)
+      echoe to . " already exists"
+      lopen
+      return
+    endif
+    """""""""""""""
   endif
-  let loclist = getloclist(bufwinnr(bufname('.')))
-  if (len(loclist) > 0)
-    echoe to . " already exists"
-    lopen
-    return
-  endif
-  """""""""""""""
-  if (a:0 > 2)
-    silent! call s:find_all_uses(word, a:3)
+  if (a:0 > 3)
+    silent! call s:find_all_uses(word, a:4)
   else
     silent! call s:find_all_uses(word)
   endif
-  silent! exe "ldo %s/\\<" . word . "\\>/" . to . "/gcI \| update"
+  call refactor#uniq_loclist()
+  silent exe "ldo %s/\\<" . word . "\\>/" . to . "/gcI \| update"
 endfunction
 
 "function! ReplaceAll(...)
@@ -109,3 +116,10 @@ endfunction
 "  exe "Glgrep! " . shellescape(str) . in_dir
 "  exe "ldo %s/" . str . "/" . to . "/gcI \| update"
 "endfunction
+
+function! refactor#uniq_loclist()
+  let loclist = getloclist(0)
+  "let loclist = sort(loclist, {f, s -> f.bufnr - s.bufnr})
+  let loclist = uniq(loclist, {f, s -> f.bufnr - s.bufnr})
+  call setloclist(0, loclist)
+endfunction
